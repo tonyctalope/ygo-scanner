@@ -34,11 +34,20 @@ jobs:
         with:
           context: .
           load: true
-          tags: ygo-scanner:ci
+          tags: ygo-scanner
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Smoke test
         run: |
-          docker run -d --name scanner -p 8787:8787 ygo-scanner:ci
+          docker run -d --name scanner -p 8787:8787 ygo-scanner
           for i in $(seq 1 30); do curl -fs http://127.0.0.1:8787/api/health && exit 0; sleep 1; done
           docker logs scanner; exit 1
+      - run: docker rm -f scanner
+      - name: Compose smoke test (no ./data directory yet)
+        run: |
+          rm -rf data
+          docker compose up -d --no-build
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:8787/api/health && break; sleep 1; done
+          docker compose logs
+          test -f data/cert.pem
+          docker compose down

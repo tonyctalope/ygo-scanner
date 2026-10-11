@@ -31,11 +31,11 @@ COPY --from=deps /app/node_modules node_modules
 COPY --from=build /app/public public
 COPY package.json ./
 COPY src src
+COPY docker-entrypoint.sh /usr/local/bin/
 RUN mkdir -p /data && chown node:node /data
-USER node
 VOLUME /data
 EXPOSE 8443 8787
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \
   CMD node -e "fetch('http://127.0.0.1:8787/api/health').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"
-ENTRYPOINT ["tini", "--"]
+ENTRYPOINT ["tini", "--", "docker-entrypoint.sh"]
 CMD ["node", "src/server.ts"]
