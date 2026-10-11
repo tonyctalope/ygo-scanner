@@ -1,0 +1,33 @@
+{
+  "name": "ygo-scanner",
+  "version": "1.0.0",
+  "description": "Scan Yu-Gi-Oh! card set codes with your phone camera and export them as CSV for CardCluster or Dragon Shield.",
+  "license": "MIT",
+  "author": "tonyctalope",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tonyctalope/ygo-scanner.git"
+  },
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "esbuild web/app.ts --bundle --format=esm --target=es2022 --minify --sourcemap --outfile=public/app.js",
+    "dev:web": "npm run build -- --watch",
+    "start": "node src/server.ts",
+    "typecheck": "tsc -p tsconfig.json && tsc -p web/tsconfig.json",
+    "test": "node --test test/*.test.ts",
+    "check": "npm run typecheck && npm test"
+  },
+  "dependencies": {
+    "@gutenye/ocr-models": "^1.4.2",
+    "onnxruntime-node": "^1.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

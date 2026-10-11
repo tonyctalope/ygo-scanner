@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0f14">
+  <meta name="color-scheme" content="dark">
+  <title>YGO Scanner</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="icon.svg" alt="" width="28" height="28">
+      <span>YGO Scanner</span>
+    </div>
+    <div class="topbar-actions">
+      <button id="localeBtn" class="ghost small" type="button" aria-label="Language">FR</button>
+      <button id="queueBtn" class="pill-btn" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+        <span data-i18n="list">List</span>
+        <span id="queueCount" class="badge">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="camera-card">
+      <div class="viewport">
+        <video id="video" playsinline muted autoplay></video>
+        <canvas id="preview"></canvas>
+        <div class="guide"><i></i><i></i><i></i><i></i></div>
+        <p class="guide-hint" data-i18n="scanHint"></p>
+        <div id="camMsg" class="cam-msg" hidden></div>
+        <div class="scan-line" id="scanLine" hidden></div>
+      </div>
+      <select id="cameraSel" class="camera-select" hidden aria-label="Camera"></select>
+    </section>
+
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+
+    <div class="controls">
+      <button id="autoBtn" class="toggle" type="button" aria-pressed="true">
+        <span class="switch"></span><span data-i18n="auto">Auto</span>
+      </button>
+      <button id="shootBtn" class="primary" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10"/></svg>
+        <span data-i18n="scan">Scan</span>
+      </button>
+      <label class="secondary file-btn">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        <span data-i18n="photo">Photo</span>
+        <input id="fileInput" type="file" accept="image/*" capture="environment" hidden>
+      </label>
+    </div>
+
+    <form id="manualForm" class="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/></svg>
+      <input id="codeInput" data-i18n-placeholder="manualPlaceholder" autocapitalize="characters" autocomplete="off" spellcheck="false" enterkeyhint="search">
+      <button class="secondary small" type="submit" data-i18n="go">Go</button>
+    </form>
+  </main>
+
+  <dialog id="resultDlg" class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="result-head">
+      <span id="resCode" class="code"></span>
+      <h2 id="resName"></h2>
+    </div>
+    <h3 data-i18n="rarity">Rarity</h3>
+    <div id="candidates" class="candidates"></div>
+
+    <div class="opts">
+      <div class="opt">
+        <h3 data-i18n="language">Language</h3>
+        <div class="seg" id="langSeg"></div>
+      </div>
+      <div class="opt">
+        <h3 data-i18n="edition">Edition</h3>
+        <div class="seg" id="editionSeg"></div>
+      </div>
+      <div class="opt">
+        <h3 data-i18n="quantity">Quantity</h3>
+        <div class="stepper">
+          <button type="button" id="qtyMinus" aria-label="−1">−</button>
+          <output id="qty">1</output>
+          <button type="button" id="qtyPlus" aria-label="+1">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet-actions">
+      <button id="cancelBtn" class="secondary" type="button" data-i18n="cancel">Cancel</button>
+      <button id="addBtn" class="primary" type="button" disabled data-i18n="add">Add to list</button>
+    </div>
+  </dialog>
+
+  <dialog id="queueDlg" class="sheet">
+    <div class="sheet-grip"></div>
+    <div class="queue-head">
+      <div>
+        <h2 data-i18n="scannedCards">Scanned cards</h2>
+        <p id="pendingCount" class="muted"></p>
+      </div>
+      <button type="button" class="ghost icon" id="closeQueue" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+
+    <h3 data-i18n="exportTitle">Export</h3>
+    <div class="exports">
+      <a id="csvCardcluster" class="export" href="export/cardcluster.csv" download>
+        <strong data-i18n="exportCardcluster">CardCluster</strong>
+        <small data-i18n="exportCardclusterHint"></small>
+      </a>
+      <a id="csvDragonshield" class="export" href="export/dragonshield.csv" download>
+        <strong data-i18n="exportDragonshield">Dragon Shield</strong>
+        <small data-i18n="exportDragonshieldHint"></small>
+      </a>
+    </div>
+    <p id="manualHint" class="notice" hidden></p>
+
+    <ul id="queueList" class="queue"></ul>
+
+    <div class="sheet-actions">
+      <button type="button" class="secondary" id="markBtn" data-i18n="markAll">Mark all as imported</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script src="app.js" type="module"></script>
+</body>
+</html>

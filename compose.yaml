@@ -1,0 +1,16 @@
+services:
+  ygo-scanner:
+    build: .
+    image: ygo-scanner
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Your computer's LAN IP, so the self-signed certificate matches the address the phone opens
+      CERT_HOSTS: ${CERT_HOSTS:-}
+    ports:
+      - "8443:8443"            # phone (HTTPS)
+      - "127.0.0.1:8787:8787"  # this computer only (CSV downloads)
+    volumes:
+      - ./data:/data
